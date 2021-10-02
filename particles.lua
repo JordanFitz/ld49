@@ -1,3 +1,5 @@
+require "ripple"
+
 function random_particle_color()
     if math.random(0,1) == 0 then
         return DARK_PARTICLE_COLOR
@@ -178,6 +180,14 @@ function ParticleCluster:populate(cluster_radius)
 end
 
 function ParticleCluster:update(delta, player)
+    if self.ripple ~= nil then
+        self.ripple:update(delta)
+
+        if self.ripple.done then
+            self.ripple = nil
+        end
+    end
+
     self.expelled_particles = self.expelled_particles or {}
 
     if player.attached_particle_rotation == nil then
@@ -245,6 +255,10 @@ function ParticleCluster:update(delta, player)
 end
 
 function ParticleCluster:render(context)
+    if self.ripple ~= nil then
+        self.ripple:render(context)
+    end
+
     for i=1,#self.particle_meta do
         local meta = self.particle_meta[i]
         local particle = self.particles[i]
@@ -342,4 +356,16 @@ function ParticleCluster:expel_particles(amount)
 
         table.insert(self.expelled_particles, small_particle)
     end
+
+    self.ripple = Ripple:new{
+        origin = {
+            x = self.position.x,
+            y = self.position.y
+        },
+        circles = {},
+        done = false,
+        radius = 0,
+        last_radius = 0,
+        generating_circles = true
+    }
 end

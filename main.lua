@@ -84,9 +84,7 @@ function canvas.update(delta)
 end
 
 function canvas.render()
-    fill_style = BACKGROUND_COLOR
-    context.fill_style(fill_style)
-    context.fill_rect(0, 0, SCREEN_SIZE, SCREEN_SIZE)
+    context.clear_rect()
 
     local break_out = false
 
@@ -141,11 +139,26 @@ function init()
 
     canvas.title("inparticulate")
 
-    canvas.use_vsync(true)
-    canvas.max_framerate(60)
+    -- canvas.use_vsync(true)
+    -- canvas.max_framerate(60)
 
     canvas.width(SCREEN_SIZE)
     canvas.height(SCREEN_SIZE)
+    canvas.background_color(BACKGROUND_COLOR)
+
+    -- cache all of the variable opacity colors 
+    -- by setting the fill_style to all of the variations
+    for i=0,1.01,0.01 do
+        context.fill_style(get_tile_color_with_opacity(i))
+        context.fill_style(get_ripple_fill_color(i))
+    end
+
+    context.fill_style(PLAYER_COLOR)
+    context.fill_style(BACKGROUND_COLOR)
+    context.fill_style(PLAYER_OUTLINE_COLOR)
+    context.fill_style(RIPPLE_COLOR)
+    context.fill_style(LIGHT_PARTICLE_COLOR)
+    context.fill_style(DARK_PARTICLE_COLOR)
 
     fill_style = get_tile_color_with_opacity(1)
     context.fill_style(fill_style)
