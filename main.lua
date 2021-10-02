@@ -2,9 +2,21 @@ require "util"
 require "constants"
 require "tile"
 require "particles"
+require "player"
 
 game_state = GameState.PLAY
 world_grid = {}
+fill_style = nil
+update_delta = 0
+
+player = Player:new{
+    position = {
+        x = 10,
+        y = 10
+    },
+    move_speed = 100,
+    moving = false
+}
 
 test_cluster = ParticleCluster:new{
     position = {
@@ -14,9 +26,30 @@ test_cluster = ParticleCluster:new{
     rotation = 0
 }
 
-test_cluster:populate(25)
+moving_towards = nil
+
+function canvas.onmousedown(event) 
+    move_towards = {
+        x = event.clientX,
+        y = event.clientY
+    }
+end
+
+function canvas.onmouseup(event) 
+    move_towards = nil
+end
+
+function canvas.onmousemove(event) 
+    if move_towards ~= nil then 
+        move_towards = {
+            x = event.clientX,
+            y = event.clientY
+        }
+    end
+end
 
 function canvas.update(delta)
+    update_delta = delta
 
     local cluster_move_amount = (delta / 2) * (SCREEN_SIZE - test_cluster.position.x)
 
@@ -26,21 +59,41 @@ function canvas.update(delta)
 
     test_cluster:move(cluster_move_amount, cluster_move_amount)
     test_cluster:rotate(delta / 1.5)
+
+    if move_towards ~= nil then
+        player:move_towards(delta, move_towards.x, move_towards.y)
+        player:clamp_to_screen()
+        player.moving = true
+    else
+        player.moving = false
+    end
 end
 
 function canvas.render()
-    context.clear_rect()
+    -- context.clear_rect()
 
-    local fill_style = get_tile_color_with_opacity(1)
-    context.fill_style(fill_style)
+    context.fill_style("#000")
+    context.fill_rect(0, 0, SCREEN_SIZE, SCREEN_SIZE)
+    fill_style = "#000"
 
     local break_out = false
+
+    local nearest_tile = snap_to_tile(player.position)
 
     for y=1,#world_grid do
         local row = world_grid[y]
 
         for x=1,#row do
             local tile = row[x]
+
+            if player.moving and player_on_tile(player.position, tile.position) then
+                tile.opacity = tile.opacity - (update_delta / 1.5)
+                tile.opacity = math.floor(tile.opacity * 100) / 100
+                if tile.opacity <= 0 then
+                    tile.opacity = 0
+                    -- TODO: tile gone!!
+                end
+            end
 
             if fill_style ~= get_tile_color_with_opacity(tile.opacity) then
                 fill_style = get_tile_color_with_opacity(tile.opacity)
@@ -60,6 +113,8 @@ function canvas.render()
     end
 
     test_cluster:render(context)
+
+    player:render(context)
 end
 
 function init()
@@ -70,6 +125,11 @@ function init()
 
     canvas.width(SCREEN_SIZE)
     canvas.height(SCREEN_SIZE)
+
+    fill_style = get_tile_color_with_opacity(1)
+    context.fill_style(fill_style)
+
+    test_cluster:populate(25)
 
     for y=0,TILE_COUNT do
         local row = {}

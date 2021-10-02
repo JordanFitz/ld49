@@ -1,0 +1,4 @@
+#!/bin/bash
+
+#intended for use with WSL
+cmd.exe /c link.bat

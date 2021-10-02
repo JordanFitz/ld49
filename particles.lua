@@ -1,9 +1,9 @@
 function random_particle_color()
     if math.random(0,1) == 0 then
-        return "rgba(0,0,0,0.85)"
+        return "rgba(0,0,0,0.55)"
     end
 
-    return "rgba(255,255,255,0.85)"
+    return "rgba(255,255,255,0.55)"
 end
 
 SingleParticle = {}
@@ -22,11 +22,14 @@ function SingleParticle:render(context)
         self.position.x, 
         self.position.y,
         PARTICLE_RADIUS,
-        0, TAU
+        0, 0 -- start and end angle = 0 causes Luau to render an sf::CircleShape 
+             -- instead of doing the expensive process of computing an arc.
     )
 
+    local fill_style = context.fill_style()
     context.fill_style(self.color)
     context.fill()
+    context.fill_style(fill_style)
 end
 
 ParticleCluster = {}
