@@ -6,7 +6,6 @@ require "player"
 
 game_state = GameState.PLAY
 world_grid = {}
-fill_style = nil
 update_delta = 0
 
 player = Player:new{
@@ -90,6 +89,8 @@ function canvas.render()
 
     local nearest_tile = snap_to_tile(player.position)
 
+    local fill_style
+
     for y=1,#world_grid do
         local row = world_grid[y]
 
@@ -159,9 +160,6 @@ function init()
     context.fill_style(RIPPLE_COLOR)
     context.fill_style(LIGHT_PARTICLE_COLOR)
     context.fill_style(DARK_PARTICLE_COLOR)
-
-    fill_style = get_tile_color_with_opacity(1)
-    context.fill_style(fill_style)
 
     atom_cluster:populate(25)
 

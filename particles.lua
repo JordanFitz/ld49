@@ -28,10 +28,8 @@ function SingleParticle:render(context)
              -- instead of doing the expensive process of computing an arc.
     )
 
-    local fill_style = context.fill_style()
     context.fill_style(self.color)
     context.fill()
-    context.fill_style(fill_style)
 end
 
 

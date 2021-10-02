@@ -48,10 +48,7 @@ function Ripple:render(context)
         return
     end
 
-    local stroke_style = context.stroke_style()
-    context.stroke_style(RIPPLE_COLOR)
-    local fill_style = context.fill_style()
-    
+    context.stroke_style(RIPPLE_COLOR)    
 
     for i=1,#self.circles do
         local circle = self.circles[i]
@@ -73,7 +70,4 @@ function Ripple:render(context)
         context.fill_style(get_ripple_fill_color(circle.opacity))
         context.fill()
     end
-
-    context.stroke_style(stroke_style)
-    context.fill_style(fill_style)
 end

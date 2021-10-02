@@ -57,15 +57,11 @@ function Player:render(context)
         0, 0
     )
 
-    local fill_style = context.fill_style()
     context.fill_style(self.color)
     context.fill()
-    context.fill_style(fill_style)
 
-    local stroke_style = context.stroke_style()
     context.stroke_style(self.outline_color)
     context.stroke()
-    context.stroke_style(stroke_style)
 end
 
 function Player:clamp_to_screen()
