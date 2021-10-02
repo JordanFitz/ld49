@@ -68,7 +68,7 @@ function canvas.update(delta)
         )
 
         if not atom_cluster.moving then
-            atom_cluster:expel_particles(10)
+            atom_cluster:expel_particles(4)
         end
         -- TODO: Uncomment
         -- player.target = nil

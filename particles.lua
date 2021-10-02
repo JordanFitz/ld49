@@ -173,12 +173,14 @@ function ParticleCluster:populate(cluster_radius)
         end
     end
 
+    -- so that the particle cluster doesn't look uniform
     shuffle(self.particle_meta)
-
 end
 
 function ParticleCluster:update(delta, player)
     self.expelled_particles = self.expelled_particles or {}
+
+    print(#self.expelled_particles)
 
     if player.attached_particle_rotation == nil then
         player.attached_particle_rotation = 0
@@ -190,14 +192,16 @@ function ParticleCluster:update(delta, player)
 
     self.player_attached_particles = self.player_attached_particles or {}
 
+    local distance_to_player = distance(player.position, self.position)
+    local min_distance = PARTICLE_ROTATION_RADIUS*1.2
+
     for i=1,#self.expelled_particles do
         local particle = self.expelled_particles[i]
 
         particle:rotate(delta * 2 * particle.rotation_factor)
 
         if not particle.attached_to_player then
-            if distance(particle.position, player.position) < PARTICLE_ROTATION_RADIUS*1.2 then
-
+            if distance(particle.position, player.position) <= min_distance then
                 particle.attached_to_player = true
                 particle.moving = false
                 table.insert(self.player_attached_particles, particle)
@@ -225,6 +229,17 @@ function ParticleCluster:update(delta, player)
 
         particle.position.y =
             player.position.y + PARTICLE_ROTATION_RADIUS * math.sin(angle)
+
+        if distance_to_player < min_distance then
+            particle.repossessed = true
+        end
+    end
+
+    if #self.player_attached_particles == #self.expelled_particles then
+        if distance_to_player < min_distance then
+            self.player_attached_particles = {}
+            self.expelled_particles = {}
+        end
     end
 end
 
@@ -247,7 +262,10 @@ function ParticleCluster:render(context)
     end
 
     for i=1,#self.expelled_particles do
-        self.expelled_particles[i]:render(context)
+        local particle = self.expelled_particles[i]
+        if not particle.repossessed then
+            particle:render(context)
+        end
     end
 end
 
@@ -315,7 +333,8 @@ function ParticleCluster:expel_particles(amount)
             move_speed = self.move_speed * 2.5,
             moving = true,
             attached_to_player = false,
-            rotation_factor = 1 + math.random()
+            rotation_factor = 1 + math.random(),
+            repossessed = false
         }
 
         small_particle:populate({
