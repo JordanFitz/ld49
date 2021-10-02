@@ -177,21 +177,54 @@ function ParticleCluster:populate(cluster_radius)
 
 end
 
-function ParticleCluster:update(delta)
+function ParticleCluster:update(delta, player)
     self.expelled_particles = self.expelled_particles or {}
+
+    if player.attached_particle_rotation == nil then
+        player.attached_particle_rotation = 0
+    end
+
+    player.attached_particle_rotation =
+        player.attached_particle_rotation +
+        ATTACHED_PARTICLE_ROTATION_SPEED * delta
+
+    self.player_attached_particles = self.player_attached_particles or {}
 
     for i=1,#self.expelled_particles do
         local particle = self.expelled_particles[i]
 
         particle:rotate(delta * 2 * particle.rotation_factor)
 
-        if particle.moving then
-            particle.moving = not particle:move_to(
-                delta,
-                particle.target.x,
-                particle.target.y
-            )
+        if not particle.attached_to_player then
+            if distance(particle.position, player.position) < PARTICLE_ROTATION_RADIUS*1.2 then
+
+                particle.attached_to_player = true
+                particle.moving = false
+                table.insert(self.player_attached_particles, particle)
+            end
+
+            if particle.moving then
+                particle.moving = not particle:move_to(
+                    delta,
+                    particle.target.x,
+                    particle.target.y
+                )
+            end
         end
+
+    end
+
+    local attached_particle_interval = TAU / #self.player_attached_particles
+
+    for i=1,#self.player_attached_particles do
+        local particle = self.player_attached_particles[i]
+        local angle =  player.attached_particle_rotation + attached_particle_interval * (i - 1)
+
+        particle.position.x =
+            player.position.x + PARTICLE_ROTATION_RADIUS * math.cos(angle)
+
+        particle.position.y =
+            player.position.y + PARTICLE_ROTATION_RADIUS * math.sin(angle)
     end
 end
 

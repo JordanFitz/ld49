@@ -45,23 +45,7 @@ function snap_to_tile(position)
     }
 end
 
--- bool intersects(CircleType circle, RectType rect)
--- {
---     circleDistance.x = abs(circle.x - rect.x);
---     circleDistance.y = abs(circle.y - rect.y);
-
---     if (circleDistance.x > (rect.width/2 + circle.r)) { return false; }
---     if (circleDistance.y > (rect.height/2 + circle.r)) { return false; }
-
---     if (circleDistance.x <= (rect.width/2)) { return true; } 
---     if (circleDistance.y <= (rect.height/2)) { return true; }
-
---     cornerDistance_sq = (circleDistance.x - rect.width/2)^2 +
---                          (circleDistance.y - rect.height/2)^2;
-
---     return (cornerDistance_sq <= (circle.r^2));
--- }
-
+-- adapted from https://stackoverflow.com/a/402010/6238921
 function player_on_tile(player_position, tile_position)
     local half_tile = TILE_SIZE / 2
 
@@ -85,4 +69,11 @@ function player_on_tile(player_position, tile_position)
     corner_distance_sq = square(circle_distance.x - half_tile) + square(circle_distance.y - half_tile)
 
     return corner_distance_sq <= square(PLAYER_RADIUS)
+end
+
+function distance(v1, v2)
+    return math.sqrt(
+        square(v2.x - v1.x) + 
+        square(v2.y - v1.y)
+    )
 end

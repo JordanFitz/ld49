@@ -56,7 +56,7 @@ end
 function canvas.update(delta)
     update_delta = delta
 
-    atom_cluster:update(delta)
+    atom_cluster:update(delta, player)
 
     atom_cluster:rotate(delta / 1.5)
 
