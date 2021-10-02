@@ -1,9 +1,0 @@
-nuclear decay
-    unstable atom - ejects alpha particles
-
-something to do with mental stability 
-
-top-down where ground is falling out from under you
-    run around collecting expended alpha particles to return them to the power source that prevents the world from falling apart
-
-    player trail

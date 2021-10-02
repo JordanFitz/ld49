@@ -48,6 +48,7 @@ end
 
 function Player:render(context)
     self.color = self.color or PLAYER_COLOR
+    self.outline_color = self.outline_color or PLAYER_OUTLINE_COLOR
 
     context.arc(
         self.position.x, 
@@ -60,6 +61,11 @@ function Player:render(context)
     context.fill_style(self.color)
     context.fill()
     context.fill_style(fill_style)
+
+    local stroke_style = context.stroke_style()
+    context.stroke_style(self.outline_color)
+    context.stroke()
+    context.stroke_style(stroke_style)
 end
 
 function Player:clamp_to_screen()

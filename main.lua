@@ -15,33 +15,38 @@ player = Player:new{
         y = 10
     },
     move_speed = 100,
-    moving = false
+    moving = false,
+    target = nil
 }
 
-test_cluster = ParticleCluster:new{
+atom_cluster = ParticleCluster:new{
     position = {
         x = 50,
         y = 50
     },
-    rotation = 0
+    rotation = 0,
+    move_speed = 25,
+    moving = true,
+    target = {
+        x = 400,
+        y = 400
+    }
 }
 
-moving_towards = nil
-
 function canvas.onmousedown(event) 
-    move_towards = {
+    player.target = {
         x = event.clientX,
         y = event.clientY
     }
 end
 
 function canvas.onmouseup(event) 
-    move_towards = nil
+    player.target = nil
 end
 
 function canvas.onmousemove(event) 
-    if move_towards ~= nil then 
-        move_towards = {
+    if player.target ~= nil then 
+        player.target = {
             x = event.clientX,
             y = event.clientY
         }
@@ -51,17 +56,20 @@ end
 function canvas.update(delta)
     update_delta = delta
 
-    local cluster_move_amount = (delta / 2) * (SCREEN_SIZE - test_cluster.position.x)
+    atom_cluster:rotate(delta / 1.5)
 
-    if SCREEN_SIZE - test_cluster.position.x < 10 then
-        cluster_move_amount = 0
+    if atom_cluster.moving then
+        atom_cluster.moving = not atom_cluster:move_to(
+            delta,
+            atom_cluster.target.x,
+            atom_cluster.target.y
+        )
+        -- TODO: Uncomment
+        -- player.target = nil
     end
 
-    test_cluster:move(cluster_move_amount, cluster_move_amount)
-    test_cluster:rotate(delta / 1.5)
-
-    if move_towards ~= nil then
-        player:move_towards(delta, move_towards.x, move_towards.y)
+    if player.target ~= nil then
+        player:move_towards(delta, player.target.x, player.target.y)
         player:clamp_to_screen()
         player.moving = true
     else
@@ -70,8 +78,6 @@ function canvas.update(delta)
 end
 
 function canvas.render()
-    -- context.clear_rect()
-
     context.fill_style("#000")
     context.fill_rect(0, 0, SCREEN_SIZE, SCREEN_SIZE)
     fill_style = "#000"
@@ -86,7 +92,7 @@ function canvas.render()
         for x=1,#row do
             local tile = row[x]
 
-            if player.moving and player_on_tile(player.position, tile.position) then
+            if player.moving and tile.opacity > 0 and player_on_tile(player.position, tile.position) then
                 tile.opacity = tile.opacity - (update_delta / 1.5)
                 tile.opacity = math.floor(tile.opacity * 100) / 100
                 if tile.opacity <= 0 then
@@ -100,7 +106,15 @@ function canvas.render()
                 context.fill_style(fill_style)
             end
 
-            context.fill_rect(tile.position.x, tile.position.y, TILE_SIZE, TILE_SIZE)
+            local tile_size = TILE_SIZE * tile.opacity
+            local tile_position = {
+                x = tile.position.x + (TILE_SIZE - tile_size) / 2, -- (TILE_SIZE-tile_size) ... :)
+                y = tile.position.y + (TILE_SIZE - tile_size) / 2
+            }
+
+            -- context.fill_rect(tile.position.x, tile.position.y, TILE_SIZE, TILE_SIZE)
+
+            context.fill_rect(tile_position.x, tile_position.y, tile_size, tile_size)
 
             if tile.position.x > SCREEN_SIZE then break end
             if tile.position.y > SCREEN_SIZE then
@@ -112,7 +126,7 @@ function canvas.render()
         if break_out then break end
     end
 
-    test_cluster:render(context)
+    atom_cluster:render(context)
 
     player:render(context)
 end
@@ -129,7 +143,7 @@ function init()
     fill_style = get_tile_color_with_opacity(1)
     context.fill_style(fill_style)
 
-    test_cluster:populate(25)
+    atom_cluster:populate(25)
 
     for y=0,TILE_COUNT do
         local row = {}

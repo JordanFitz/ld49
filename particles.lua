@@ -87,6 +87,45 @@ function ParticleCluster:render(context)
     end
 end
 
+-- Returns whether the cluster is at its target
+function ParticleCluster:move_to(d, x, y)
+    local delta = {
+        x = x - self.position.x,
+        y = y - self.position.y
+    }
+
+    local abs_delta = {
+        x = math.abs(delta.x),
+        y = math.abs(delta.y)
+    }
+
+    local min_distance = d * self.move_speed
+
+    if abs_delta.x < min_distance and abs_delta.y < min_distance then 
+        self.position = {
+            x = x,
+            y = y
+        }
+
+        return true
+    end
+
+    local angle = math.atan2(delta.y, delta.x)
+
+    local speed = d * self.move_speed * (((abs_delta.x + abs_delta.y) / 2) / 20)
+
+    if speed < d * self.move_speed then
+        speed = d * self.move_speed
+    end
+
+    self:move(
+        speed * math.cos(angle),
+        speed * math.sin(angle)
+    )
+
+    return false
+end
+
 function ParticleCluster:move(x, y)
     self.position.x = self.position.x + x
     self.position.y = self.position.y + y
