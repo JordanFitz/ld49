@@ -180,8 +180,6 @@ end
 function ParticleCluster:update(delta, player)
     self.expelled_particles = self.expelled_particles or {}
 
-    print(#self.expelled_particles)
-
     if player.attached_particle_rotation == nil then
         player.attached_particle_rotation = 0
     end
@@ -237,6 +235,9 @@ function ParticleCluster:update(delta, player)
 
     if #self.player_attached_particles == #self.expelled_particles then
         if distance_to_player < min_distance then
+            self.moving = true
+            self.target = random_location()
+
             self.player_attached_particles = {}
             self.expelled_particles = {}
         end
@@ -326,10 +327,7 @@ function ParticleCluster:expel_particles(amount)
 
     for i=1,amount do
         local small_particle = SmallParticleCluster:new{
-            target = {
-                x = math.random(PARTICLE_SPREAD_PADDING, SCREEN_SIZE - PARTICLE_SPREAD_PADDING),
-                y = math.random(PARTICLE_SPREAD_PADDING, SCREEN_SIZE - PARTICLE_SPREAD_PADDING)
-            },
+            target = random_location(),
             move_speed = self.move_speed * 2.5,
             moving = true,
             attached_to_player = false,

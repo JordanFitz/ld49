@@ -77,3 +77,10 @@ function distance(v1, v2)
         square(v2.y - v1.y)
     )
 end
+
+function random_location()
+    return {
+        x = math.random(PARTICLE_SPREAD_PADDING, SCREEN_SIZE - PARTICLE_SPREAD_PADDING),
+        y = math.random(PARTICLE_SPREAD_PADDING, SCREEN_SIZE - PARTICLE_SPREAD_PADDING)
+    }
+end
