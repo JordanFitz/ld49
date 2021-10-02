@@ -11,8 +11,8 @@ update_delta = 0
 
 player = Player:new{
     position = {
-        x = 10,
-        y = 10
+        x = 15,
+        y = 15
     },
     move_speed = 100,
     moving = false,
@@ -56,6 +56,8 @@ end
 function canvas.update(delta)
     update_delta = delta
 
+    atom_cluster:update(delta)
+
     atom_cluster:rotate(delta / 1.5)
 
     if atom_cluster.moving then
@@ -64,6 +66,10 @@ function canvas.update(delta)
             atom_cluster.target.x,
             atom_cluster.target.y
         )
+
+        if not atom_cluster.moving then
+            atom_cluster:expel_particles(10)
+        end
         -- TODO: Uncomment
         -- player.target = nil
     end
@@ -78,9 +84,9 @@ function canvas.update(delta)
 end
 
 function canvas.render()
-    context.fill_style("#000")
+    fill_style = BACKGROUND_COLOR
+    context.fill_style(fill_style)
     context.fill_rect(0, 0, SCREEN_SIZE, SCREEN_SIZE)
-    fill_style = "#000"
 
     local break_out = false
 
@@ -106,13 +112,12 @@ function canvas.render()
                 context.fill_style(fill_style)
             end
 
+            -- Shrink the tile as it gets lighter
             local tile_size = TILE_SIZE * tile.opacity
             local tile_position = {
                 x = tile.position.x + (TILE_SIZE - tile_size) / 2, -- (TILE_SIZE-tile_size) ... :)
                 y = tile.position.y + (TILE_SIZE - tile_size) / 2
             }
-
-            -- context.fill_rect(tile.position.x, tile.position.y, TILE_SIZE, TILE_SIZE)
 
             context.fill_rect(tile_position.x, tile_position.y, tile_size, tile_size)
 
@@ -133,6 +138,8 @@ end
 
 function init()
     math.randomseed(os.time())
+
+    canvas.title("inparticulate")
 
     canvas.use_vsync(true)
     canvas.max_framerate(60)
