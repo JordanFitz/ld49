@@ -32,24 +32,60 @@ hud_text = Text:new{
 
 sound = {
     current_music = 1,
+    volume = 100,
 
     music = {
-        Audio:new("res/sound/music1.ogg", true),
-        Audio:new("res/sound/music2.ogg", true),
-        Audio:new("res/sound/music3.ogg", true),
-        Audio:new("res/sound/music4.ogg", true),
+        Audio:new("../res/sound/music1.ogg", true),
+        Audio:new("../res/sound/music2.ogg", true),
+        Audio:new("../res/sound/music3.ogg", true),
+        Audio:new("../res/sound/music4.ogg", true),
     },
 
     explosions = {
-        Audio:new("res/sound/explosion1.ogg"),
-        Audio:new("res/sound/explosion2.ogg"),
-        Audio:new("res/sound/explosion3.ogg"),
-        Audio:new("res/sound/explosion4.ogg"),
-        Audio:new("res/sound/explosion5.ogg"),
+        Audio:new("../res/sound/explosion1.ogg"),
+        Audio:new("../res/sound/explosion2.ogg"),
+        Audio:new("../res/sound/explosion3.ogg"),
+        Audio:new("../res/sound/explosion4.ogg"),
+        Audio:new("../res/sound/explosion5.ogg"),
     },
 
-    explosion_played = false
+    explosion_played = false,
+
+    set_volume = function(volume)
+        sound.volume = volume 
+
+        for i=1,#sound.music do
+            sound.music[i]:volume(volume)
+        end
+
+        for i=1,#sound.explosions do
+            sound.explosions[i]:volume(volume)
+        end
+    end
 }
+
+function load_score()
+    local f = io.open("../res/high_score", "r")
+    if f == nil then
+        return 0
+    end
+
+    local value = f:read("*number")
+    f:close()
+
+    return value or 0
+end
+
+function save_score(value)
+    local f = io.open("../res/high_score", "w")
+    if f == nil then
+        print("Failed to open high score file!")
+        return
+    end
+
+    f:write(math.floor(value))
+    f:close()
+end
 
 update_delta = 0
 
@@ -81,6 +117,24 @@ function canvas.onmousemove(event)
             x = event.clientX,
             y = event.clientY
         }
+    end
+end
+
+function canvas.onkeydown(event)
+    if event.key == "ArrowUp" then
+        sound.volume = sound.volume + 5
+        if sound.volume > 100 then
+            sound.volume = 100
+        end
+        sound.set_volume(sound.volume)
+    end
+
+    if event.key == "ArrowDown" then
+        sound.volume = sound.volume - 5
+        if sound.volume < 0 then
+            sound.volume = 0
+        end
+        sound.set_volume(sound.volume)
     end
 end
 
@@ -260,12 +314,13 @@ context.clear_rect()
     player:render(context)
 
     context.fill_style(HUD_COLOR)
-    context.fill_rect(0, SCREEN_SIZE - HUD_HEIGHT, hud_text:get_width(context).width + 10, HUD_HEIGHT)
+    context.fill_rect(0, SCREEN_SIZE - HUD_HEIGHT, hud_text:get_width(context) + 10, HUD_HEIGHT)
     hud_text:render(context)
 
     if player.died then
         fade_out:render(context)
         if fade_out.done then
+            save_score(player.score)
             game_state = GameState.DEAD
         end
         return 
@@ -293,7 +348,8 @@ function start_game()
         moving = false,
         target = nil,
         died = false,
-        score = 0
+        score = 0,
+        high_score = load_score()
     }
 
     atom_cluster = ParticleCluster:new{
@@ -340,6 +396,27 @@ function start_game()
                 format = {
                     function() 
                         return math.floor(player.score)
+                    end
+                }
+            },
+            FadingText:new{
+                text = "%s",
+                size = 14,
+                opacity = 0,
+                position = {
+                    x = CENTER_TEXT,
+                    y = 275
+                },
+                format = {
+                    function()
+                        local high_score = player.high_score
+                        local new_score = math.floor(player.score)
+
+                        if new_score > high_score then
+                            return "a new personal best!"
+                        else
+                            return string.format("personal best: %d", high_score)
+                        end
                     end
                 }
             },
@@ -422,12 +499,26 @@ function init()
                 }
             },
             FadingText:new{
-                text = "[click anywhere to begin]",
+                text = "[up and down arrows to adjust volume (%.0f%%)]",
                 size = 11,
                 opacity = 0,
                 position = {
                     x = CENTER_TEXT,
                     y = 420
+                },
+                format = {
+                    function()
+                        return sound.volume
+                    end
+                }
+            },
+            FadingText:new{
+                text = "[click anywhere to begin]",
+                size = 11,
+                opacity = 0,
+                position = {
+                    x = CENTER_TEXT,
+                    y = 450
                 }
             }
         }
@@ -445,10 +536,10 @@ function init()
 
     canvas.background_color(BACKGROUND_COLOR)
 
-    canvas.load_font("SourceCodePro", "res/scp.ttf")
+    canvas.load_font("SourceCodePro", "../res/scp.ttf")
 
-    -- cache all of the variable opacity colors 
-    -- by setting the fill_style to all of the variations
+    -- cache all of the variable opacity colors by
+    -- setting fill_style to all of the variations
     for i=0,1.01,0.01 do
         context.fill_style(get_tile_color_with_opacity(i))
         context.fill_style(get_ripple_fill_color(i))
@@ -461,6 +552,8 @@ function init()
     context.fill_style(RIPPLE_COLOR)
     context.fill_style(LIGHT_PARTICLE_COLOR)
     context.fill_style(DARK_PARTICLE_COLOR)
+
+    sound.set_volume(DEFAULT_VOLUME)
 
     sound.music[1]:play()
 end

@@ -1,0 +1,32 @@
+[x] build luau in release mode!
+    static sfml?
+    [x] don't log color/font caching
+
+[x] canvas/luau audio support !!
+[x] canvas/luau title change
+    [x] volume adjustment 
+
+- top-down where ground is falling out from under you
+    - run around collecting expended alpha particles to return them to the power source that prevents the world from falling apart
+
+    player trail
+
+    [_] don't allow player to move until after first explosion
+
+    [x] nicer look for tile degradation ??
+        [x] maybe shrink tile either instead of or in addition to opacity reduction
+
+    [x] atom cluster - move to random locations in burst -> move -> burst cycle
+
+    [x] collecting alpha particles - orbit around player until they're brought back to atom
+
+    [_] time how long you last before falling into the void
+        [x] store high score ??
+
+        [x] score goes up as you move around
+        [x] particle returns heal the ground a bit (expulsion does healing)
+            [x] each particle does some healing -> more particles = harder to collect but more healing
+
+    [x] screen shake ??
+
+
