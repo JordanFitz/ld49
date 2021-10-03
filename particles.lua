@@ -1,4 +1,5 @@
 require "ripple"
+require "flash"
 
 function random_particle_color()
     if math.random(0,1) == 0 then
@@ -181,8 +182,18 @@ function ParticleCluster:update(delta, player)
     if self.ripple ~= nil then
         self.ripple:update(delta)
 
+        self.shake_screen = self.ripple.generating_circles
+
         if self.ripple.done then
             self.ripple = nil
+        end
+    end
+
+    if self.flash ~= nil then 
+        self.flash:update(delta)
+
+        if self.flash.done then
+            self.flash = nil
         end
     end
 
@@ -242,7 +253,15 @@ function ParticleCluster:update(delta, player)
     end
 
     if #self.player_attached_particles == #self.expelled_particles then
+        -- All particles have been returned
         if distance_to_player < min_distance then
+            if self.expelled_count == nil then
+                self.expelled_count = #self.expelled_particles
+            end
+
+            self.begin_healing = true
+            self.healing_amount = self.expelled_count / PARTICLE_HEALING_FACTOR
+
             self.moving = true
             self.target = random_location()
 
@@ -253,6 +272,12 @@ function ParticleCluster:update(delta, player)
 end
 
 function ParticleCluster:render(context)
+    self.expelled_particles = self.expelled_particles or {}
+
+    if self.flash ~= nil then
+        self.flash:render(context)
+    end
+
     if self.ripple ~= nil then
         self.ripple:render(context)
     end
@@ -336,6 +361,12 @@ end
 
 function ParticleCluster:expel_particles(amount)
     self.expelled_particles = self.expelled_particles or {}
+    self.expelled_count = amount
+
+    if self.begin_healing then
+        self.begin_healing = false
+        self.healing_in_progress = true
+    end
 
     for i=1,amount do
         local small_particle = SmallParticleCluster:new{
@@ -365,5 +396,10 @@ function ParticleCluster:expel_particles(amount)
         radius = 0,
         last_radius = 0,
         generating_circles = true
+    }
+
+    self.flash = Flash:new{
+        done = false,
+        opacity = 1
     }
 end

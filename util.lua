@@ -37,14 +37,6 @@ function math.round(value)
     return math.floor(value + 0.5)
 end
 
--- adapted from https://gamedev.stackexchange.com/a/33146
-function snap_to_tile(position)
-    return {
-        x = math.floor(position.x / TILE_SIZE) * TILE_SIZE,
-        y = math.floor(position.y / TILE_SIZE) * TILE_SIZE
-    }
-end
-
 -- adapted from https://stackoverflow.com/a/402010/6238921
 function player_on_tile(player_position, tile_position)
     local half_tile = TILE_SIZE / 2
@@ -83,4 +75,20 @@ function random_location()
         x = math.random(PARTICLE_SPREAD_PADDING, SCREEN_SIZE - PARTICLE_SPREAD_PADDING),
         y = math.random(PARTICLE_SPREAD_PADDING, SCREEN_SIZE - PARTICLE_SPREAD_PADDING)
     }
+end
+
+function get_font_string(size) 
+    return tostring(size) .. "px SourceCodePro"
+end
+
+function fulfill_formatting(str, entries)
+    if not entries then return str end
+
+    local values = {}
+
+    for i=1,#entries do
+        table.insert(values, entries[i]())
+    end
+
+    return string.format(str, table.unpack(values))
 end

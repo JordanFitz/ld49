@@ -1,4 +1,5 @@
 function get_ripple_fill_color(opacity)
+    opacity = math.floor(opacity * 100) / 100
     return "rgba(255,255,255," .. tostring(opacity) .. ")"
 end
 
@@ -31,7 +32,6 @@ function Ripple:update(delta)
         local circle = self.circles[i]
         circle.radius = circle.radius + delta * circle.speed 
         circle.opacity = circle.opacity  - delta * 1.1
-        circle.opacity = math.floor(circle.opacity * 100) / 100
 
         if circle.opacity < 0 then
             circle.opacity = 0
